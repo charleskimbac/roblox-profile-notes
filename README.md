@@ -5,7 +5,7 @@ Add and save custom notes to individual Roblox profiles.
 <img src="https://i.imgur.com/M139fSW.png" height=350px></img>
 
 <h2>Chrome Web Store</h2>
-TBA
+https://chromewebstore.google.com/detail/oppdpokdhgchlccgkdflnfckdebccgke
 
 <h2>Chromium - Downloading extension manually</h2>
 <ul>
