@@ -1,0 +1,21 @@
+{
+    "manifest_version": 2, // so perms are requested on install
+    "name": "Roblox Profile Notes",
+    "version": "1.0.3",
+    "description": "Add and save custom notes to individual Roblox profiles.",
+	"icons": {
+        "48": "icon.png"
+    },
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "roblox-profile-notes@charlesb.kim"
+		}
+	},
+    "permissions": ["storage"],
+    "content_scripts": [
+        {
+            "matches": ["https://www.roblox.com/users/*/profile"],
+            "js": ["content.js"]
+        }
+    ]
+}
