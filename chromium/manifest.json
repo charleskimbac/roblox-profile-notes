@@ -12,5 +12,8 @@
     ],
     "icons": {
         "48": "icon.png"
-    }
+    },
+    "action": {
+        "default_popup": "popup.html"
+      }
 }

@@ -79,8 +79,7 @@ function main() {
 }
 
 if (document.readyState === "loading") {
-    // loading not finished yet
     document.addEventListener("DOMContentLoaded", main);
-} else { // DOMContentLoaded already fired
+} else {
     main();
 }

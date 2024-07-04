@@ -1,0 +1,17 @@
+body {
+    width: 300px;
+    height: 400px;
+    text-align: center;
+    padding: 10px;
+    padding-top: 0px;
+    box-sizing: border-box;
+}
+
+#notes {
+    height: calc(100% - 50px);
+    overflow-y: auto;
+}
+
+.note {
+    white-space: pre-line;
+}
