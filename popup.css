@@ -15,3 +15,7 @@ body {
 .note {
     white-space: pre-line;
 }
+
+p {
+    margin-top: 2px;
+}
