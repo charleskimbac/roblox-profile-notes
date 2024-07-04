@@ -1,12 +1,11 @@
 /*
-for now, to view all your notes:
+for now, to view all your notes for chrome only:
 get the 'Storage Area Viewer' extension (https://chromewebstore.google.com/detail/storage-area-viewer/fcbndbpibgeafoogbmbcljcmgakaniae)
 go to 'chrome-extension://ID/manifest.json' where ID is the extension ID found in 'chrome://extensions/' -> find/click RPN's extension details
 ctrl+shift+i or inspect the page
 click the "Storage Area Viewer" tab
 change "storage area" to "sync"
 */
-
 
 let textbox;
 let userID;
@@ -45,6 +44,7 @@ function addTextbox() {
     if (targetDiv && targetDiv.classList.contains("section") && targetDiv.classList.contains("profile-header")) {
         const div = document.createElement("div"); // holds label and txtbox
         div.style.marginBottom = "12px"; // center between 2 sections above/below
+        
         // this is to make notes label aligned to top left of div instead of bottom left
         div.style.display = "flex";
         div.style.alignItems = "flex-start";
@@ -71,17 +71,16 @@ function addTextbox() {
     }
 } 
 
-function doAll() {
+function main() {
     addTextbox()
     updateUserID()
     loadNote()
     saveNoteOnChange()
 }
 
-
 if (document.readyState === "loading") {
     // loading not finished yet
-    document.addEventListener("DOMContentLoaded", doAll);
-  } else { // DOMContentLoaded already fired
-    doAll();
-  }
+    document.addEventListener("DOMContentLoaded", main);
+} else { // DOMContentLoaded already fired
+    main();
+}

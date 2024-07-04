@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Roblox Profile Notes",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Add and save custom notes to individual Roblox profiles.",
     "permissions": ["storage"],
     "content_scripts": [
