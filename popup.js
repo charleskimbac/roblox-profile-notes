@@ -1,5 +1,13 @@
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", main);
+} else {
+    main();
+}
+
 async function main() {
-    const notesDiv = document.getElementById("notes");
+    const importButton = document.getElementById("importButton");
+    const exportButton = document.getElementById("exportButton");
+
     let storage = await chrome.storage.sync.get();
     console.log(storage);
 
@@ -9,23 +17,21 @@ async function main() {
     }
 }
 
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", main);
-} else {
-    main();
+function importNotes() {
+    
 }
 
 function createNote(id, note) {
-    const div = document.createElement("div");
+    const div = document.createElement("fieldset");
     div.className = "note";
 
     const p = document.createElement("p");
     p.id = id + "Note";
-    p.textContent = id + ": \n" + note;
+    p.textContent = note;
     p.style.display = "none";
 
     const button = document.createElement("button");
-    button.innerText = id;
+    button.innerText = "LO3 \n pp232213321123e2";
     button.onclick = () => {
         if (p.style.display === "none") {
             p.style.display = "block";
