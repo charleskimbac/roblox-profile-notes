@@ -7,17 +7,29 @@ click the "Storage Area Viewer" tab
 change "storage area" to "sync"
 */
 
-let textbox;
-let userID;
+let userID = "";
 
-function updateUserID() {
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", main);
+} else {
+    main();
+}
+
+function main() {
+    addTextbox();
+    userID = getUserID();
+    loadNote();
+    saveNoteOnChange();
+}
+
+function getUserID() {
     // Get the current URL
     const currentURL = window.location.href;
     
     const parts = currentURL.split("/");
     
     // assuming userid always after "users" -> roblox.com/users/USERID/profile
-    userID = parts[parts.indexOf("users") + 1];
+    return parts[parts.indexOf("users") + 1];
 }
 
 function loadNote() {
@@ -29,8 +41,13 @@ function loadNote() {
 }
 
 function saveNoteOnChange() {
+    // on textbox input change, update note
     textbox.addEventListener('input', () => {
-        const note = textbox.value;
+        let note = textbox.value;
+        if (note === "") { // remove note if empty
+            chrome.storage.sync.remove(userID);
+            return;
+        }
         const saveData = {};
         saveData[userID] = note;
         chrome.storage.sync.set(saveData);
@@ -59,7 +76,7 @@ function addTextbox() {
         textbox = document.createElement("textarea");
         textbox.placeholder = "Enter note here";
         textbox.style.backgroundColor = "#e0e0e0";
-        textbox.style.width = "100%"
+        textbox.style.width = "100%";
         
         div.appendChild(label);
         div.appendChild(textbox);
@@ -69,17 +86,4 @@ function addTextbox() {
 
         return;
     }
-} 
-
-function main() {
-    addTextbox()
-    updateUserID()
-    loadNote()
-    saveNoteOnChange()
-}
-
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", main);
-} else {
-    main();
 }

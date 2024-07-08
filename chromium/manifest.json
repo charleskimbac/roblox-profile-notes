@@ -15,5 +15,8 @@
     },
     "action": {
         "default_popup": "popup.html"
-      }
+    },
+    "host_permissions": [
+        "https://users.roblox.com/v1/users/*"
+    ]
 }
