@@ -7,16 +7,13 @@
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <h2>Saved Profile Notes:</h2>
-    <input type="file" id="fileInput" accept=".json">
+    <h2>Saved Profile Notes</h2>
     <!-- customized label for file input; cant use fileInput.click() as onclick for a <button> -->
     <!-- export label instead of button since buttons have different font than a label-->
     <label class="buttonLabel" id="exportLabel">Export</label>
-    <input type="file" id="fileInput" accept=".json">
-    <label for="fileInput" class="buttonLabel" id="importLabel">Import</label>
-    <br>
-    <p id="importError" style="display: none";>hii</p>
-    <br>
+    <!-- firefox has different html when importing -->
+    <label class="buttonLabel" id="importLabel">Import</label>
+    <br><br>
 
     <div id="notes">
     </div>
