@@ -5,6 +5,7 @@ if (document.readyState !== "complete") { // usernames not yet loaded in interac
 }
 
 let storage = {};
+let isFirefox = false;
 
 async function main() {
     storage = await getStorage();
@@ -26,31 +27,16 @@ async function main() {
 
     createNotes(userIDs);
 
-    const importLabel = document.getElementById("importLabel");
-    let isFirefox = false;
     try { // getBrowserInfo() is only available in FF
         const isFirefoxInfo = await browser.runtime.getBrowserInfo();
         isFirefox = isFirefoxInfo.name === "Firefox";
     } catch (error) {
         isFirefox = false;
     }
-    if (!isFirefox) {
-        importLabel.htmlFor = "fileInput";
-    }
-
-
-    //add onActions to elements
-    const fileInput = document.getElementById("fileInput");
-
-
-
-    // PUT THIS INTO IMPORT FUNC !!! REM THE PARAMTER REQ!! MAYBE NEW GLOBALS!! YAY !!
-
-    // hide file input (and use textbox instead) for ff since popup closes if file selector is opened
     
+    const importLabel = document.getElementById("importLabel");
     if (isFirefox) {
         importLabel.onclick = openImportFirefox;
-
     } else { // chromium
         const fileInput = document.createElement("input");
         fileInput.type = "file";
@@ -60,14 +46,16 @@ async function main() {
         importLabel.onclick = () => {
             fileInput.click();
         };
+        importLabel.htmlFor = "fileInput";
 
-        fileInput.onchange = () => {
-            importNotes(fileInput.files[0]);
+        fileInput.onchange = async () => {
+            const raw = await fileInput.files[0].text();
+            importNotes(raw);
         };
     }
 
 
-
+    console.log(await browser.tabs.query({}));
 
 
 
@@ -123,29 +111,37 @@ async function createNotes(userIDs) {
 
 // input file selector doesnt work in FF popup, use textbox instead
 function openImportFirefox() {
+    const body = document.body;
+
     const exportLabel = document.getElementById("exportLabel");
     exportLabel.style.display = "none";
 
     const importLabel = document.getElementById("importLabel");
     importLabel.style.display = "none";
 
-    const body = document.body;
-    const importTip = document.createElement("p");
-    importTip.innerText = "To import: open the export .txt file,\npaste the data here, and submit.";
-    body.insertBefore(importTip, importLabel);
-
-    body.insertBefore(document.createElement("br"), importLabel);
+    const submit = document.createElement("button");
+    submit.innerText = "Submit";
+    submit.onclick = () => {
+        importNotes(input.value);
+    };
+    body.insertBefore(submit, importLabel);
 
     const input = document.createElement("input");
     input.id = "importInput";
-    body.insertBefore(input, importLabel);
     input.type = "text";
     input.placeholder = "Enter export file data here";
     input.style = "margin-right: 4px;";
+    body.insertBefore(input, submit);
 
-    const submit = document.createElement("button");
-    submit.innerText = "Submit";
-    body.insertBefore(submit, importLabel.nextSibling);
+    const importTip = document.createElement("p");
+    importTip.innerText = "To import: open the export file,\ncopy everything (ctrl a, ctrl c),\npaste the data below, and submit.";
+    body.insertBefore(importTip, input);
+
+    const error = document.createElement("p");
+    error.id = "importError";
+    error.style = "color: red; visibility: hidden;";
+    error.textContent = "Invalid data format!";
+    body.insertBefore(error, input);
 }
 
 
@@ -156,14 +152,14 @@ function getUserDataPromise(userID) {
         .then((response) => response.json());
 }
 
-async function importNotes(file) {
-    const raw = await file.text();
-
+async function importNotes(raw) {
     let importedData;
     try {
         importedData = JSON.parse(raw);
     } catch (error) {
-        alert("Invalid file format!");
+        // alert() messes up the popup in FF...
+        const errorText = document.getElementById("importError");
+        errorText.style.visibility = "visible";
         return;
     }
 
@@ -211,33 +207,40 @@ function exportNotes(storage) {
 }
 
 
-async function createSingleNote(data0) {
+function createSingleNote(data0) {
     const displayName = data0.displayName;
     const username = data0.username;
     const userID = data0.userID;
     const note = data0.note;
 
+    const profileLink = "https://www.roblox.com/users/" + userID + "/profile";
+
     const div = document.createElement("fieldset");
     div.className = "note";
+    const notesDiv = document.getElementById("notes");
 
-    const p = document.createElement("p");
-    p.userID = userID + "Note";
-    p.textContent = note;
-    p.style.display = "none";
+    const pNote = document.createElement("p");
+    pNote.textContent = note;
+    pNote.style.display = "none";
 
     const button = document.createElement("button");
     button.innerText = displayName + "\n@" + username;
     button.onclick = () => {
-        if (p.style.display === "none") {
-            p.style.display = "block";
+        if (pNote.style.display === "none") {
+            pNote.style.display = "block";
         } else {
-            p.style.display = "none";
+            pNote.style.display = "none";
         }
-    }
+    };
 
-    div.appendChild(button);
-    div.appendChild(p);
-    
-    const notesDiv = document.getElementById("notes");
+    const aProfileLink = document.createElement("a");
+    aProfileLink.href = profileLink;
+    aProfileLink.textContent = "\nProfile link";
+    aProfileLink.style = "font-size: smaller";
+
     notesDiv.appendChild(div);
+    div.appendChild(button);
+    div.appendChild(pNote);
+    pNote.appendChild(document.createElement("br"));
+    pNote.appendChild(aProfileLink);
 }
