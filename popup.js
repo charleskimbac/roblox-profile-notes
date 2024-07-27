@@ -9,17 +9,8 @@ let isFirefox = false;
 
 async function main() {
     storage = await getStorage();
-    console.log(storage);
+    //console.log(storage);
 
-    /* 
-    data = [
-        {   "userID": userIDHere,
-            "note": "noteHere",
-            "username": "usernameHere",
-            "displayName": "displayNameHere"
-        }, etc.
-    ]
-    */
     const userIDs = [];
     for (const userID in storage) {
         userIDs.push(userID);
@@ -30,11 +21,13 @@ async function main() {
     try { // getBrowserInfo() is only available in FF
         const isFirefoxInfo = await browser.runtime.getBrowserInfo();
         isFirefox = isFirefoxInfo.name === "Firefox";
-    } catch (error) {
+    } catch (e) {
         isFirefox = false;
     }
     
     const importLabel = document.getElementById("importLabel");
+
+    // FF: file input doesnt work in popup
     if (isFirefox) {
         importLabel.onclick = openImportFirefox;
     } else { // chromium
@@ -54,21 +47,13 @@ async function main() {
         };
     }
 
-
-    console.log(await browser.tabs.query({}));
-
-
-
-
     const exportLabel = document.getElementById("exportLabel");
     exportLabel.onclick = () => {
         exportNotes(storage);
     };
-
-
 }
 
-// chrome.storage doesnt work in mv2 (for ff compatibility)
+// chrome.storage promises dont work in mv2 (for ff compatibility)
 async function getStorage() {
     return new Promise((resolve) => {
         chrome.storage.sync.get(null, (result) => { // get all storage
@@ -79,10 +64,19 @@ async function getStorage() {
 
 // where userIDs is an array of userIDs
 async function createNotes(userIDs) {
+    // get userdata from roblox api
     const userDataPromises = userIDs.map((userID) => getUserDataPromise(userID));
     const fetchedUserData = await Promise.all(userDataPromises); // "parallel" fetches
 
-    const data = fetchedUserData.map((userData) => {
+    // no user data, show "no notes"
+    if (fetchedUserData.length === 0) {
+        const p = document.createElement("p");
+        p.innerText = "No notes saved.";
+        document.getElementById("notes").appendChild(p);
+        return;
+    }
+
+    const parsedUserData = fetchedUserData.map((userData) => {
         return {
             "userID": userData.id,
             "displayName": userData.displayName,
@@ -92,7 +86,7 @@ async function createNotes(userIDs) {
     });
 
     // sort
-    data.sort((a, b) => {
+    parsedUserData.sort((a, b) => {
         const name1 = a.displayName.toLowerCase();
         const name2 = b.displayName.toLowerCase();
         if (name1 < name2) {
@@ -104,7 +98,7 @@ async function createNotes(userIDs) {
         return 0;
     });
 
-    data.forEach((data0) => {
+    parsedUserData.forEach((data0) => {
         createSingleNote(data0);
     });
 }
@@ -174,7 +168,7 @@ async function importNotes(raw) {
         const month = date.toLocaleString("default", { month: "short" });
         const day = date.getDate();
         const year = date.getFullYear();
-        const importDateHeader = "Imported on " + month + " " + day + ", " + year;
+        const importDateHeader = "Imported on " + month + " " + day + ", " + year + ":";
         const importData = importDateHeader + "\n" + importedNote;
 
         chrome.storage.sync.get([userID], (result) => {
@@ -190,8 +184,23 @@ async function importNotes(raw) {
         });
     }
 
-    // reload tabs to show new data and so old data cant overwrite
-    chrome.tabs.sendMessage(undefined, "reload");
+    // reload all profile tabs to show new data
+    let tabs;
+    if (isFirefox) { // for some reason ff doesnt work with chrome.tabs
+        tabs = await browser.tabs.query({});
+    } else {
+        tabs = await chrome.tabs.query({});
+    }
+    console.log(tabs);
+    const profileTabIDs = [];
+    tabs.forEach((tab) => {
+        if (tab.url) { // tab.url only exists for roblox profile pages since we only have perms for that link
+            profileTabIDs.push(tab.id);
+        }
+    });
+    profileTabIDs.forEach((tabID) => {
+        chrome.tabs.reload(tabID);
+    });
     location.reload(); // reload popup
 }
 
@@ -237,6 +246,7 @@ function createSingleNote(data0) {
     aProfileLink.href = profileLink;
     aProfileLink.textContent = "\nProfile link";
     aProfileLink.style = "font-size: smaller";
+    aProfileLink.target = "_blank"; // chrome needs this
 
     notesDiv.appendChild(div);
     div.appendChild(button);

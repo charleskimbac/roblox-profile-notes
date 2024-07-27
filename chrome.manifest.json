@@ -3,7 +3,7 @@
     "name": "Roblox Profile Notes",
     "version": "1.1.0",
     "description": "Add and save custom notes to individual Roblox profiles.",
-    "permissions": ["storage", "tabs"],
+    "permissions": ["storage"],
     "content_scripts": [
         {
             "matches": ["*://*.roblox.com/users/*/profile*"],
@@ -17,6 +17,7 @@
         "default_popup": "popup.html"
     },
     "host_permissions": [
-        "*://users.roblox.com/v1/users/*"
+        "*://users.roblox.com/v1/users/*",
+        "*://*.roblox.com/users/*/profile"
     ]
 }
