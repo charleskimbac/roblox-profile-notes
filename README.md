@@ -2,7 +2,7 @@
 
 Add and save custom notes to individual Roblox profiles. Click on the extension icon to view and import/export your notes.
 
-<img src="./example.png" height=500px></img>
+<img src="./example.png" height=450px></img>
 
 <h2>Chrome Extension</h2>
 https://chromewebstore.google.com/detail/oppdpokdhgchlccgkdflnfckdebccgke
