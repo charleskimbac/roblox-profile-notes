@@ -12,13 +12,6 @@ function main() {
         location.reload();
     }
 
-    // reload page if data was imported, from popup.js
-    chrome.runtime.onMessage.addListener((message) => {
-        if (message === "reload") {
-            location.reload();
-        }
-    });
-
     addTextbox();
     userID = getUserID();
     loadNote();
