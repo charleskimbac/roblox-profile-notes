@@ -244,7 +244,7 @@ function createSingleNote(data0) {
 
     const aProfileLink = document.createElement("a");
     aProfileLink.href = profileLink;
-    aProfileLink.textContent = "\nProfile link";
+    aProfileLink.textContent = "Profile link";
     aProfileLink.style = "font-size: smaller";
     aProfileLink.target = "_blank"; // chrome needs this
 
