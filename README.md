@@ -18,7 +18,7 @@ https://addons.mozilla.org/en-US/firefox/addon/roblox-profile-notes
     - Extract the folder and and enter the extracted folder.
       - Another folder should be inside. This will be the folder to install later.
     - Find the `[browser].manifest.json` files.
-    - *Remove* the `[browser].` in the filename for the browser you are installing onto.
+    - *Remove* the `[browser].` in the filename for the browser you are using.
     - Example: if you're on Chrome (Chromium), then rename `chrome.manifest.json` to `manifest.json`.
 - Extract the folder.
 - Move the folder to a safe place where it won't get deleted accidentally (e.g. `Documents`).
@@ -26,4 +26,5 @@ https://addons.mozilla.org/en-US/firefox/addon/roblox-profile-notes
 - Enable `Developer Mode`.
 - Click `Load Unpacked`.
 - Select the extracted folder.
-  - Ensure that this folder has a `manifest.json` file inside of it.
+  - Ensure that this folder has a `manifest.json` file *directly* inside of it.
+  - The folder should not contain another folder.
