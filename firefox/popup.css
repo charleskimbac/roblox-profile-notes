@@ -1,0 +1,38 @@
+body {
+    min-width: 300px;
+    min-height: 400px;
+    text-align: center;
+    padding: 10px;
+    padding-top: 0px;
+    box-sizing: border-box;
+}
+
+#notes {
+    height: calc(100% - 50px);
+    overflow-y: auto;
+}
+
+.note {
+    white-space: pre-line;
+}
+
+p {
+    margin-bottom: 0px;
+    margin-top: 6px;
+}
+
+.buttonLabel {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #f0f0f0;
+    border: 1px solid #707070;
+    border-radius: 4px;
+    font-weight: 500;
+}
+.buttonLabel:hover {
+    background-color: #e0e0e0;
+}
+
+input[type="file"] {
+    display: none;
+}

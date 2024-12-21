@@ -1,7 +1,15 @@
+if (document.readyState !== "complete") { // usernames not yet loaded in interactive
+    window.addEventListener("load", main); 
+} else {
+    main();
+}
+
 let storage = {};
+let isFirefox = false;
 
 async function main() {
-    storage = await chrome.storage.sync.get(null);
+    storage = await getStorage();
+    //console.log(storage);
 
     const userIDs = [];
     for (const userID in storage) {
@@ -9,28 +17,49 @@ async function main() {
     }
 
     createNotes(userIDs);
+
+    try { // getBrowserInfo() is only available in FF
+        const isFirefoxInfo = await browser.runtime.getBrowserInfo();
+        isFirefox = isFirefoxInfo.name === "Firefox";
+    } catch (e) {
+        isFirefox = false;
+    }
     
     const importLabel = document.getElementById("importLabel");
 
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = ".txt";
-    document.body.appendChild(fileInput);
+    // FF: file input doesnt work in popup
+    if (isFirefox) {
+        importLabel.onclick = openImportFirefox;
+    } else { // chromium
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = ".txt";
+        document.body.appendChild(fileInput);
 
-    importLabel.onclick = () => {
-        fileInput.click();
-    };
-    importLabel.htmlFor = "fileInput";
+        importLabel.onclick = () => {
+            fileInput.click();
+        };
+        importLabel.htmlFor = "fileInput";
 
-    fileInput.onchange = async () => {
-        const raw = await fileInput.files[0].text();
-        importNotes(raw);
-    };
+        fileInput.onchange = async () => {
+            const raw = await fileInput.files[0].text();
+            importNotes(raw);
+        };
+    }
 
     const exportLabel = document.getElementById("exportLabel");
     exportLabel.onclick = () => {
         exportNotes(storage);
     };
+}
+
+// chrome.storage promises dont work in mv2 (for ff compatibility)
+async function getStorage() {
+    return new Promise((resolve) => {
+        chrome.storage.sync.get(null, (result) => { // get all storage
+            resolve(result);
+        });
+    });
 }
 
 // where userIDs is an array of userIDs
@@ -55,7 +84,6 @@ async function createNotes(userIDs) {
             "note": storage[userData.id]
         };
     });
-    console.log(parsedUserData);
 
     // sort
     parsedUserData.sort((a, b) => {
@@ -75,11 +103,47 @@ async function createNotes(userIDs) {
     });
 }
 
+// input file selector doesnt work in FF popup, use textbox instead
+function openImportFirefox() {
+    const body = document.body;
+
+    const exportLabel = document.getElementById("exportLabel");
+    exportLabel.style.display = "none";
+
+    const importLabel = document.getElementById("importLabel");
+    importLabel.style.display = "none";
+
+    const submit = document.createElement("button");
+    submit.innerText = "Submit";
+    submit.onclick = () => {
+        importNotes(input.value);
+    };
+    body.insertBefore(submit, importLabel);
+
+    const input = document.createElement("input");
+    input.id = "importInput";
+    input.type = "text";
+    input.placeholder = "Enter export file data here";
+    input.style = "margin-right: 4px;";
+    body.insertBefore(input, submit);
+
+    const importTip = document.createElement("p");
+    importTip.innerText = "To import: open the export file,\ncopy everything (ctrl a, ctrl c),\npaste the data below, and submit.";
+    body.insertBefore(importTip, input);
+
+    const error = document.createElement("p");
+    error.id = "importError";
+    error.style = "color: red; visibility: hidden;";
+    error.textContent = "Invalid data format!";
+    body.insertBefore(error, input);
+}
+
+
 // get username and display name; cant store this in storage initially since it may change
-async function getUserDataPromise(userID) {
+function getUserDataPromise(userID) {
     const link = "https://users.roblox.com/v1/users/" + userID;
-    const response = await fetch(link);
-    return await response.json();
+    return fetch(link)
+        .then((response) => response.json());
 }
 
 async function importNotes(raw) {
@@ -87,6 +151,7 @@ async function importNotes(raw) {
     try {
         importedData = JSON.parse(raw);
     } catch (error) {
+        // alert() messes up the popup in FF...
         const errorText = document.getElementById("importError");
         errorText.style.visibility = "visible";
         return;
@@ -106,20 +171,26 @@ async function importNotes(raw) {
         const importDateHeader = "Imported on " + month + " " + day + ", " + year + ":";
         const importData = importDateHeader + "\n" + importedNote;
 
-        const result = await chrome.storage.sync.get([userID]);
-        const existingNote = result[userID];
-        const saveData = {};
-        if (existingNote) { // if saved note alr exists
-            saveData[userID] = existingNote + "\n\n" + importData;
-        } else {
-            saveData[userID] = importData;
-        }
-        chrome.storage.sync.set(saveData);
+        chrome.storage.sync.get([userID], (result) => {
+            const existingNote = result[userID];
+            const saveData = {};
+            if (existingNote) { // if saved note alr exists
+                saveData[userID] = existingNote + "\n\n" + importData;
+                chrome.storage.sync.set(saveData);
+            } else {
+                saveData[userID] = importData;
+                chrome.storage.sync.set(saveData);
+            }
+        });
     }
 
     // reload all profile tabs to show new data
-    let tabs = await chrome.tabs.query({});
-
+    let tabs;
+    if (isFirefox) { // for some reason ff doesnt work with chrome.tabs
+        tabs = await browser.tabs.query({});
+    } else {
+        tabs = await chrome.tabs.query({});
+    }
     console.log(tabs);
     const profileTabIDs = [];
     tabs.forEach((tab) => {
@@ -140,7 +211,7 @@ function exportNotes(storage) {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "RPNexport.txt";
+    a.download = "RPNexport.txt"; // txt so easily openable for ff import
     a.click();
 }
 
@@ -175,7 +246,7 @@ function createSingleNote(data0) {
     aProfileLink.href = profileLink;
     aProfileLink.textContent = "Profile link";
     aProfileLink.style = "font-size: smaller";
-    aProfileLink.target = "_blank";
+    aProfileLink.target = "_blank"; // chrome needs this
 
     notesDiv.appendChild(div);
     div.appendChild(button);
