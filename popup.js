@@ -1,5 +1,6 @@
 let storage = {};
 
+main();
 async function main() {
     storage = await chrome.storage.sync.get(null);
 
