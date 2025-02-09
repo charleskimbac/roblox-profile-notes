@@ -21,18 +21,14 @@ p {
     margin-top: 6px;
 }
 
-.buttonLabel {
-    display: inline-block;
-    padding: 2px 8px;
-    background-color: #f0f0f0;
-    border: 1px solid #707070;
-    border-radius: 4px;
-    font-weight: 500;
-}
-.buttonLabel:hover {
-    background-color: #e0e0e0;
+input[type="checkbox"] {
+    vertical-align: middle;
 }
 
 input[type="file"] {
     display: none;
+}
+
+.navButton {
+    padding: calc(padding + 4px);
 }
