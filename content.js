@@ -1,5 +1,7 @@
 let userID;
 let textbox;
+const DARK_THEME_BG_COLOR = "#272930";
+const LIGHT_THEME_BG_COLOR = "#f7f7f8";
 
 main();
 function main() {
@@ -27,23 +29,26 @@ function addTextbox() {
         warning.style.display = "none";
         warning.style.color = "red";
 
-        // "notes" label
-        const label = document.createElement("label")
-        label.textContent = "Notes: ";
-        label.style.fontWeight = "bold";
+        // "notes"
+        const notesText = document.createElement("h2")
+        notesText.textContent = "Notes";
         
         // textbox
         textbox = document.createElement("textarea");
+        if (isOnDarkTheme()) {
+            textbox.style.backgroundColor = DARK_THEME_BG_COLOR;
+        } else {
+            textbox.style.backgroundColor = LIGHT_THEME_BG_COLOR;
+        }
         textbox.id = "textbox";
         textbox.placeholder = "Enter note here";
-        textbox.style.backgroundColor = "#e0e0e0";
         textbox.style.width = "100%";
         textbox.style.height = "60px";
         textbox.style.marginTop = "2px"; // spacing between label and textbox
         
         div.appendChild(warning);
-        div.appendChild(label);
-        div.appendChild(document.createElement("br"));
+        div.appendChild(notesText);
+        // div.appendChild(document.createElement("br"));
         div.appendChild(textbox);
         
         // insert textbox after the target div
@@ -81,13 +86,31 @@ function saveNoteOnChange() {
             const saveData = {};
             saveData[userID] = note;
             chrome.storage.sync.set(saveData);
+
+        // eslint-disable-next-line no-unused-vars
         } catch (error) { // this happens if ext updates while tab is already open
-            const warning = document.getElementById("warning");
-            warning.style.display = "block";
-            alert("SAVE FAILED! SAVE/COPY YOUR NOTE AND RELOAD THE PAGE!");
-            const textbox = document.getElementById("textbox");
-            textbox.setAttribute("readonly", true);
-            textbox.setAttribute("disabled", true);
+            showWarningAndDisableTextbox();
         }
     });
+}
+
+// to do: mutationobserver so textbox updates if theme is changed after content.js loads
+function isOnDarkTheme() {
+    const rbxBodyElement = document.querySelector("#rbx-body");
+    const classes = rbxBodyElement.getAttribute("class");
+    const isOnDark = classes.indexOf("dark-theme") != -1;
+
+    if (isOnDark) {
+        return true;
+    }
+    return false;
+}
+
+function showWarningAndDisableTextbox() {
+    const warning = document.getElementById("warning");
+    warning.style.display = "block";
+    alert("SAVE FAILED! SAVE/COPY YOUR NOTE AND RELOAD THE PAGE!");
+    const textbox = document.getElementById("textbox");
+    textbox.setAttribute("readonly", true);
+    textbox.setAttribute("disabled", true);
 }

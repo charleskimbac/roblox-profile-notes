@@ -2,6 +2,31 @@ let storage = {};
 
 main();
 async function main() {
+    // import
+    const importButton = document.getElementById("importButton");
+
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".txt";
+    document.body.append(fileInput);
+
+    importButton.onclick = () => {
+        fileInput.click();
+    };
+
+    fileInput.onchange = async () => {
+        const raw = await fileInput.files[0].text();
+        importNotes(raw);
+    };
+
+    // export
+    const exportButton = document.getElementById("exportButton");
+    exportButton.onclick = async () => {
+        const storage = await chrome.storage.sync.get(null);
+        exportNotes(storage);
+    };
+
+    // load notes
     storage = await chrome.storage.sync.get(null);
 
     const userIDs = [];
@@ -10,28 +35,6 @@ async function main() {
     }
 
     createNotes(userIDs);
-    
-    const importLabel = document.getElementById("importLabel");
-
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = ".txt";
-    document.body.appendChild(fileInput);
-
-    importLabel.onclick = () => {
-        fileInput.click();
-    };
-    importLabel.htmlFor = "fileInput";
-
-    fileInput.onchange = async () => {
-        const raw = await fileInput.files[0].text();
-        importNotes(raw);
-    };
-
-    const exportLabel = document.getElementById("exportLabel");
-    exportLabel.onclick = () => {
-        exportNotes(storage);
-    };
 }
 
 // where userIDs is an array of userIDs
@@ -44,7 +47,7 @@ async function createNotes(userIDs) {
     if (fetchedUserData.length === 0) {
         const p = document.createElement("p");
         p.innerText = "No notes saved.";
-        document.getElementById("notes").appendChild(p);
+        document.getElementById("notes").append(p);
         return;
     }
 
@@ -83,69 +86,6 @@ async function getUserDataPromise(userID) {
     return await response.json();
 }
 
-async function importNotes(raw) {
-    let importedData;
-    try {
-        importedData = JSON.parse(raw);
-    } catch (error) {
-        const errorText = document.getElementById("importError");
-        errorText.style.visibility = "visible";
-        return;
-    }
-
-    const userIDs = [];
-    for (const userID in importedData) {
-        userIDs.push(userID);
-
-        // save to storage
-        const importedNote = importedData[userID];
-        // add date before imported note
-        const date = new Date();
-        const month = date.toLocaleString("default", { month: "short" });
-        const day = date.getDate();
-        const year = date.getFullYear();
-        const importDateHeader = "Imported on " + month + " " + day + ", " + year + ":";
-        const importData = importDateHeader + "\n" + importedNote;
-
-        const result = await chrome.storage.sync.get([userID]);
-        const existingNote = result[userID];
-        const saveData = {};
-        if (existingNote) { // if saved note alr exists
-            saveData[userID] = existingNote + "\n\n" + importData;
-        } else {
-            saveData[userID] = importData;
-        }
-        chrome.storage.sync.set(saveData);
-    }
-
-    // reload all profile tabs to show new data
-    let tabs = await chrome.tabs.query({});
-
-    console.log(tabs);
-    const profileTabIDs = [];
-    tabs.forEach((tab) => {
-        if (tab.url) { // tab.url only exists for roblox profile pages since we only have perms for that link
-            profileTabIDs.push(tab.id);
-        }
-    });
-    profileTabIDs.forEach((tabID) => {
-        chrome.tabs.reload(tabID);
-    });
-    location.reload(); // reload popup
-}
-
-function exportNotes(storage) {
-    const data = JSON.stringify(storage);
-    const blob = new Blob([data], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "RPNexport.txt";
-    a.click();
-}
-
-
 function createSingleNote(data0) {
     const displayName = data0.displayName;
     const username = data0.username;
@@ -178,9 +118,69 @@ function createSingleNote(data0) {
     aProfileLink.style = "font-size: smaller";
     aProfileLink.target = "_blank";
 
-    notesDiv.appendChild(div);
-    div.appendChild(button);
-    div.appendChild(pNote);
-    pNote.appendChild(document.createElement("br"));
-    pNote.appendChild(aProfileLink);
+    notesDiv.append(div);
+    div.append(button);
+    div.append(pNote);
+    pNote.append(document.createElement("br"));
+    pNote.append(aProfileLink);
+}
+
+async function importNotes(raw) {
+    let importedData;
+    try {
+        importedData = JSON.parse(raw);
+
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+        const errorText = document.getElementById("importError");
+        errorText.style.visibility = "visible";
+        return;
+    }
+
+    const userIDs = [];
+    for (const userID in importedData) {
+        userIDs.push(userID);
+
+        // save to storage
+        const importedNote = importedData[userID];
+        // add date before imported note
+        const date = new Date();
+        const importDateHeader = "Imported on " + date.toLocaleDateString(); 
+        const importData = importDateHeader + "\n" + importedNote;
+
+        const result = await chrome.storage.sync.get([userID]);
+        const existingNote = result[userID];
+        const saveData = {};
+        if (existingNote) { // if saved note alr exists
+            saveData[userID] = existingNote + "\n\n" + importData;
+        } else {
+            saveData[userID] = importData;
+        }
+        chrome.storage.sync.set(saveData);
+    }
+
+    // reload all profile tabs to show new data
+    let tabs = await chrome.tabs.query({});
+
+    const profileTabIDs = [];
+    tabs.forEach((tab) => {
+        if (tab.url) { // tab.url only exists for roblox profile pages since we only have perms for that link
+            profileTabIDs.push(tab.id);
+        }
+    });
+    profileTabIDs.forEach((tabID) => {
+        chrome.tabs.reload(tabID);
+    });
+    location.reload(); // reload popup
+}
+
+function exportNotes(storage) {
+    const data = JSON.stringify(storage);
+    const blob = new Blob([data], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "RPNexport.txt";
+    a.click();
 }
