@@ -2,6 +2,16 @@ let storage = {};
 
 main();
 async function main() {
+    // show alert
+    let loaded = false;
+    const result = await chrome.storage.local.get("loaded");
+    loaded = result.loaded;
+
+    if (!loaded) {
+        const alertBox = document.querySelector("#alert");
+        alertBox.style.display = "block";
+    }
+
     // import
     const importButton = document.getElementById("importButton");
 

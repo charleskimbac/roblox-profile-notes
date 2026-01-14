@@ -2,13 +2,23 @@ let userID;
 let textbox;
 const DARK_THEME_BG_COLOR = "#272930";
 const LIGHT_THEME_BG_COLOR = "#f7f7f8";
+let inserted = false;
 
 main();
-function main() {
+async function main() {
+    // using this method so we can avoid tabs permission and intercomms altogether
+    await chrome.storage.local.set({
+        "loaded": false
+    });
+
     addTextbox();
     userID = getUserID();
-    loadNote();
+    await loadNote();
     saveNoteOnChange();
+
+    await chrome.storage.local.set({
+        "loaded": true
+    });
 }
 
 function addTextbox() {
@@ -54,10 +64,9 @@ function addTextbox() {
         
         // insert textbox after the target div
         targetDiv.append(div);
-
-        return;
+        inserted = true;
     } else {
-        console.log("RPN: Could not find target div to insert notes textbox.");
+        throw("RPN: Could not find target div to insert notes textbox.");
     }
 }
 

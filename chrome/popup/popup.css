@@ -24,3 +24,9 @@ p {
 input[type="file"] {
     display: none;
 }
+
+#alert {
+    background-color: lightcoral;
+    border-radius: 5px;
+    padding: 5px;
+}
