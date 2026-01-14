@@ -13,11 +13,12 @@ function main() {
 
 function addTextbox() {
     // select profile card div
-    const targetDiv = document.getElementById("profile-header-container");
+    const targetDiv = document.querySelector(".profile-header-overlay");
     
-    if (targetDiv && targetDiv.classList.contains("section") && targetDiv.classList.contains("profile-header")) {
+    if (targetDiv) {
         const div = document.createElement("div");
-        div.style.marginBottom = "12px"; // center between 2 sections above/below
+        div.style.marginTop = "7px"; // center between 2 sections above/below
+        div.id = "rpn-notes-container";
         
         // this is to make notes label aligned to top left of div instead of bottom left
         div.style.alignItems = "flex-start";
@@ -52,9 +53,11 @@ function addTextbox() {
         div.appendChild(textbox);
         
         // insert textbox after the target div
-        targetDiv.parentNode.insertBefore(div, targetDiv.nextSibling);
+        targetDiv.append(div);
 
         return;
+    } else {
+        console.log("RPN: Could not find target div to insert notes textbox.");
     }
 }
 
