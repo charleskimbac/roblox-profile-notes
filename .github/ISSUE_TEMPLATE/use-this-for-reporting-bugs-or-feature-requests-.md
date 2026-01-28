@@ -1,6 +1,6 @@
 ---
-name: issue-template
-about: template
+name: Use this for reporting bugs or feature requests!
+about: Issue template
 title: "<Put a short description of the bug or feature request here>"
 labels: ''
 assignees: ''
