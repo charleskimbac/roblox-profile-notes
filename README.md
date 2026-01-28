@@ -20,7 +20,7 @@ Maybe someone will read this one day.
 
 
 ## Have a feature request or feedback?
-Please submit an issue [here](https://github.com/charleskimbac/roblox-profile-notes/issues/new). If something's not working, please include what other Roblox browser extensions you have on.
+Please submit an issue [here](https://github.com/charleskimbac/roblox-profile-notes/issues/new?title=%3CPut%20what%20is%20wrong%20or%20not%20working%20here%3E&body=Put%20any%20other%20Roblox%20browser%20extensions%20you%20use%20here,%20then%20click%20%22Create%22%20at%20the%20bottom). If something's not working, please include what other Roblox browser extensions you have on.
 
 ## Installing manually
 - [Download the latest release zip file for your browser](https://github.com/charleskimbac/roblox-profile-notes/releases).
